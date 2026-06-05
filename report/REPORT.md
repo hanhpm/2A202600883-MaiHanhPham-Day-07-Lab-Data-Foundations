@@ -1,218 +1,139 @@
 # Báo Cáo Lab 7: Embedding & Vector Store
 
-**Họ tên:** [Tên sinh viên]
-**Nhóm:** [Tên nhóm]
-**Ngày:** [Ngày nộp]
+## Thông Tin Chung
 
----
+| Mục | Nội dung |
+|---|---|
+| Sinh viên chính | Phạm Mai Hạnh |
+| MSSV | 2A202600883 |
+| Thành viên so sánh Phase 2 | Nguyễn Thị Vang - 2A202600723 |
+| Lab | Day 07 - Data Foundations: Embedding & Vector Store |
+| Trạng thái | Hoàn thành Phase 1 và Phase 2 |
 
-## 1. Warm-up (5 điểm)
+## Phase 1 - Cá Nhân
 
-### Cosine Similarity (Ex 1.1)
+Phase 1 yêu cầu hoàn thiện các TODO trong package `src`, gồm chunking, vector store và RAG agent.
 
-**High cosine similarity nghĩa là gì?**
-> *Viết 1-2 câu:*
+### File Đã Hoàn Thiện
 
-**Ví dụ HIGH similarity:**
-- Sentence A:
-- Sentence B:
-- Tại sao tương đồng:
+| File | Nội dung |
+|---|---|
+| `src/chunking.py` | Implement `SentenceChunker`, `RecursiveChunker`, `compute_similarity`, `ChunkingStrategyComparator` |
+| `src/store.py` | Implement `EmbeddingStore` với add/search/filter/delete/count |
+| `src/agent.py` | Implement `KnowledgeBaseAgent` theo pattern retrieve context -> build prompt -> call LLM |
 
-**Ví dụ LOW similarity:**
-- Sentence A:
-- Sentence B:
-- Tại sao khác:
+### Cách Tiếp Cận
 
-**Tại sao cosine similarity được ưu tiên hơn Euclidean distance cho text embeddings?**
-> *Viết 1-2 câu:*
+`SentenceChunker` tách văn bản theo ranh giới câu, sau đó gom nhiều câu vào một chunk. Cách này giúp chunk dễ đọc và tránh cắt giữa câu.
 
-### Chunking Math (Ex 1.2)
+`RecursiveChunker` ưu tiên tách theo separator lớn như paragraph, line break, sentence boundary, rồi mới fallback về tách nhỏ hơn. Cách này phù hợp với tài liệu markdown hoặc technical docs có cấu trúc rõ.
 
-**Document 10,000 ký tự, chunk_size=500, overlap=50. Bao nhiêu chunks?**
-> *Trình bày phép tính:*
-> *Đáp án:*
+`compute_similarity` dùng cosine similarity với guard cho zero vector để tránh lỗi chia cho 0.
 
-**Nếu overlap tăng lên 100, chunk count thay đổi thế nào? Tại sao muốn overlap nhiều hơn?**
-> *Viết 1-2 câu:*
+`EmbeddingStore` lưu record gồm `id`, `content`, `metadata`, `embedding`; khi search sẽ embed query, tính similarity, sort theo score giảm dần và trả về top-k. `search_with_filter()` lọc metadata trước rồi mới search, đúng với yêu cầu lab.
 
----
+`KnowledgeBaseAgent` lấy top-k chunks từ store, ghép thành context block, tạo prompt và gọi `llm_fn`.
 
-## 2. Document Selection — Nhóm (10 điểm)
+### Kết Quả Kiểm Thử
 
-### Domain & Lý Do Chọn
+Đã chạy:
 
-**Domain:** [ví dụ: Customer support FAQ, Vietnamese law, cooking recipes, ...]
-
-**Tại sao nhóm chọn domain này?**
-> *Viết 2-3 câu:*
-
-### Data Inventory
-
-| # | Tên tài liệu | Nguồn | Số ký tự | Metadata đã gán |
-|---|--------------|-------|----------|-----------------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
-
-### Metadata Schema
-
-| Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho retrieval? |
-|----------------|------|---------------|-------------------------------|
-| | | | |
-| | | | |
-
----
-
-## 3. Chunking Strategy — Cá nhân chọn, nhóm so sánh (15 điểm)
-
-### Baseline Analysis
-
-Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
-
-| Tài liệu | Strategy | Chunk Count | Avg Length | Preserves Context? |
-|-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
-
-### Strategy Của Tôi
-
-**Loại:** [FixedSizeChunker / SentenceChunker / RecursiveChunker / custom strategy]
-
-**Mô tả cách hoạt động:**
-> *Viết 3-4 câu: strategy chunk thế nào? Dựa trên dấu hiệu gì?*
-
-**Tại sao tôi chọn strategy này cho domain nhóm?**
-> *Viết 2-3 câu: domain có pattern gì mà strategy khai thác?*
-
-**Code snippet (nếu custom):**
-```python
-# Paste implementation here
+```bash
+pytest tests/ -v
 ```
 
-### So Sánh: Strategy của tôi vs Baseline
+Kết quả:
 
-| Tài liệu | Strategy | Chunk Count | Avg Length | Retrieval Quality? |
-|-----------|----------|-------------|------------|--------------------|
-| | best baseline | | | |
-| | **của tôi** | | | |
-
-### So Sánh Với Thành Viên Khác
-
-| Thành viên | Strategy | Retrieval Score (/10) | Điểm mạnh | Điểm yếu |
-|-----------|----------|----------------------|-----------|----------|
-| Tôi | | | | |
-| [Tên] | | | | |
-| [Tên] | | | | |
-
-**Strategy nào tốt nhất cho domain này? Tại sao?**
-> *Viết 2-3 câu:*
-
----
-
-## 4. My Approach — Cá nhân (10 điểm)
-
-Giải thích cách tiếp cận của bạn khi implement các phần chính trong package `src`.
-
-### Chunking Functions
-
-**`SentenceChunker.chunk`** — approach:
-> *Viết 2-3 câu: dùng regex gì để detect sentence? Xử lý edge case nào?*
-
-**`RecursiveChunker.chunk` / `_split`** — approach:
-> *Viết 2-3 câu: algorithm hoạt động thế nào? Base case là gì?*
-
-### EmbeddingStore
-
-**`add_documents` + `search`** — approach:
-> *Viết 2-3 câu: lưu trữ thế nào? Tính similarity ra sao?*
-
-**`search_with_filter` + `delete_document`** — approach:
-> *Viết 2-3 câu: filter trước hay sau? Delete bằng cách nào?*
-
-### KnowledgeBaseAgent
-
-**`answer`** — approach:
-> *Viết 2-3 câu: prompt structure? Cách inject context?*
-
-### Test Results
-
-```
-# Paste output of: pytest tests/ -v
+```text
+42 passed
 ```
 
-**Số tests pass:** __ / __
+## Phase 2 - Chạy Data Và So Sánh
 
----
+Phase 2 sử dụng data đã tải về trong:
 
-## 5. Similarity Predictions — Cá nhân (5 điểm)
+```text
+data/downloaded_data/
+```
 
-| Pair | Sentence A | Sentence B | Dự đoán | Actual Score | Đúng? |
-|------|-----------|-----------|---------|--------------|-------|
-| 1 | | | high / low | | |
-| 2 | | | high / low | | |
-| 3 | | | high / low | | |
-| 4 | | | high / low | | |
-| 5 | | | high / low | | |
+Domain:
 
-**Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn nghĩa?**
-> *Viết 2-3 câu:*
+```text
+Technical Documentation Retrieval for AI Developer Tools
+```
 
----
+Bộ dữ liệu gồm 9 file về Chroma, Docker Compose, FastAPI, LangChain text splitters, Qdrant và Sentence Transformers.
 
-## 6. Results — Cá nhân (10 điểm)
+## Metadata Schema
 
-Chạy 5 benchmark queries của nhóm trên implementation cá nhân của bạn trong package `src`. **5 queries phải trùng với các thành viên cùng nhóm.**
+Mỗi chunk được gắn metadata:
 
-### Benchmark Queries & Gold Answers (nhóm thống nhất)
+| Field | Ý nghĩa |
+|---|---|
+| `source` | Đường dẫn file gốc |
+| `filename` | Tên file |
+| `parent_doc` | Document gốc |
+| `topic` | Chủ đề chính, dùng để filter |
+| `doc_type` | Loại tài liệu |
+| `title` | Tên hiển thị |
+| `language` | Ngôn ngữ |
+| `chunk_index` | Vị trí chunk |
 
-| # | Query | Gold Answer |
-|---|-------|-------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+## Strategy Của Từng Cá Nhân
 
-### Kết Quả Của Tôi
+| Họ tên | MSSV | Strategy | Lý do |
+|---|---|---|---|
+| Nguyễn Thị Vang | 2A202600723 | `SentenceChunker(max_sentences_per_chunk=4)` | Giữ câu hoàn chỉnh, dễ đọc khi inspect kết quả |
+| Phạm Mai Hạnh | 2A202600883 | `RecursiveChunker(chunk_size=700)` | Giữ paragraph/section markdown tốt hơn và kiểm soát chunk size ổn định |
 
-| # | Query | Top-1 Retrieved Chunk (tóm tắt) | Score | Relevant? | Agent Answer (tóm tắt) |
-|---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+## Benchmark Queries
 
-**Bao nhiêu queries trả về chunk relevant trong top-3?** __ / 5
+| ID | Query | Expected topic |
+|---|---|---|
+| Q1 | What does Chroma provide for retrieval and metadata filtering? | chroma |
+| Q2 | How do you run a FastAPI app locally and where can you open interactive API docs? | fastapi |
+| Q3 | Why is RecursiveCharacterTextSplitter a good default text splitting strategy? | langchain |
+| Q4 | In Qdrant, what is a collection and which distance metrics are supported? | qdrant |
+| Q5 | What is the quick start process for Docker Compose? | docker |
+| Q6 | Which similarity functions are available in Sentence Transformers for semantic textual similarity? | sentence_transformers |
 
----
+## Kết Quả So Sánh
 
-## 7. What I Learned (5 điểm — Demo)
+| Student | Strategy | Chunks | Avg length | Unfiltered score | Filtered score |
+|---|---|---:|---:|---:|---:|
+| Nguyễn Thị Vang | `SentenceChunker(max_sentences_per_chunk=4)` | 151 | 2165.61 | 3 / 12 | 12 / 12 |
+| Phạm Mai Hạnh | `RecursiveChunker(chunk_size=700)` | 490 | 569.07 | 3 / 12 | 12 / 12 |
 
-**Điều hay nhất tôi học được từ thành viên khác trong nhóm:**
-> *Viết 2-3 câu:*
+## Nhận Xét
 
-**Điều hay nhất tôi học được từ nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+Khi không dùng metadata filter, cả hai strategy đều chỉ đạt 3/12. Nguyên nhân chính là lab đang dùng `_mock_embed`, đây là embedding fallback deterministic chứ không phải semantic embedding thật. Vì vậy, unfiltered search dễ bị nhiễu giữa các tài liệu technical có nhiều từ khóa chung như `API`, `client`, `server`, `docs`, `run`.
 
-**Nếu làm lại, tôi sẽ thay đổi gì trong data strategy?**
-> *Viết 2-3 câu:*
+Khi dùng metadata filter theo `topic`, cả hai strategy đều đạt 12/12. Điều này cho thấy metadata filtering có tác động rất lớn đến retrieval quality trong bộ dữ liệu này.
 
----
+Về chất lượng chunk, `RecursiveChunker(chunk_size=700)` phù hợp hơn với downloaded docs vì tạo chunk ngắn hơn, ổn định hơn và giữ cấu trúc markdown tốt hơn. `SentenceChunker(max_sentences_per_chunk=4)` dễ đọc nhưng chunk trung bình quá dài với các file manual lớn như Qdrant và Sentence Transformers.
 
-## Tự Đánh Giá
+## Failure Analysis
 
-| Tiêu chí | Loại | Điểm tự đánh giá |
-|----------|------|-------------------|
-| Warm-up | Cá nhân | / 5 |
-| Document selection | Nhóm | / 10 |
-| Chunking strategy | Nhóm | / 15 |
-| My approach | Cá nhân | / 10 |
-| Similarity predictions | Cá nhân | / 5 |
-| Results | Cá nhân | / 10 |
-| Core implementation (tests) | Cá nhân | / 30 |
-| Demo | Nhóm | / 5 |
-| **Tổng** | | **/ 100** |
+Failure case rõ nhất là Q2 hỏi về FastAPI, nhưng unfiltered search của hai strategy đều trả về tài liệu khác ở top-1:
+
+- Nguyễn Thị Vang: top-1 là `docker_compose_readme.md`.
+- Phạm Mai Hạnh: top-1 là `qdrant_points.md`.
+
+Nguyên nhân:
+
+- `_mock_embed` không hiểu semantic thật sự.
+- Dataset có nhiều tài liệu dài và nhiều thuật ngữ technical giống nhau.
+- Tài liệu Qdrant rất dài nên tạo nhiều chunk, làm tăng xác suất xuất hiện trong top-k.
+
+Cải thiện:
+
+- Dùng metadata filter theo `topic`, `doc_type`, hoặc `source`.
+- Dùng embedder thật như `LocalEmbedder(all-MiniLM-L6-v2)` nếu môi trường cho phép.
+- Thêm reranking hoặc hybrid search kết hợp keyword + vector.
+- Với docs dài, nên dùng recursive/header-aware chunking để tách theo section rõ hơn.
+
+## Kết Luận
+
+Phase 1 đã hoàn thành đầy đủ và pass toàn bộ test. Phase 2 đã chạy với data thật trong `downloaded_data`, có benchmark queries, metadata schema, hai strategy cá nhân và bảng so sánh kết quả.
+
+Bài học chính là retrieval quality không chỉ phụ thuộc vào chunking. Metadata strategy và embedding backend ảnh hưởng rất mạnh đến chất lượng kết quả.
