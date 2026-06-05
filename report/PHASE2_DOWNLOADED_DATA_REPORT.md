@@ -21,6 +21,12 @@ Bộ data dùng trong Phase 2 nằm tại:
 data/downloaded_data/
 ```
 
+UI/UX dashboard hiển thị metrics so sánh:
+
+```text
+report_ui_phase2/index.html
+```
+
 | # | File | Topic | Type | Characters |
 |---|---|---|---|---:|
 | 1 | `chroma_introduction.md` | chroma | overview | 5112 |

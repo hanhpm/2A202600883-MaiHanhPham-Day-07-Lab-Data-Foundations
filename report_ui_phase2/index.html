@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phase 2 Metrics Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Day 07 Lab - Embedding & Vector Store</p>
+        <h1>Phase 2 Metrics Dashboard</h1>
+      </div>
+      <div class="identity">
+        <span>Nguyễn Thị Vang · 2A202600723</span>
+        <span>Phạm Mai Hạnh · 2A202600883</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="overview">
+        <article class="metric">
+          <span class="label">Dataset</span>
+          <strong>9</strong>
+          <span class="hint">downloaded docs</span>
+        </article>
+        <article class="metric">
+          <span class="label">Benchmark</span>
+          <strong>6</strong>
+          <span class="hint">queries</span>
+        </article>
+        <article class="metric good">
+          <span class="label">Filtered Score</span>
+          <strong>12/12</strong>
+          <span class="hint">cả hai strategy</span>
+        </article>
+        <article class="metric warn">
+          <span class="label">Unfiltered Score</span>
+          <strong>3/12</strong>
+          <span class="hint">do mock embedder nhiễu</span>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Score Comparison</h2>
+            <p>So sánh điểm retrieval trước và sau metadata filter.</p>
+          </div>
+          <div class="score-bars" id="scoreBars"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Chunk Profile</h2>
+            <p>Số chunk và độ dài trung bình của mỗi strategy.</p>
+          </div>
+          <div class="chunk-chart" id="chunkChart"></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head split">
+          <div>
+            <h2>Query Result Matrix</h2>
+            <p>Top-1 source, điểm từng query và trạng thái top-3 relevant.</p>
+          </div>
+          <div class="legend">
+            <span><i class="dot good-dot"></i>Relevant</span>
+            <span><i class="dot bad-dot"></i>Not relevant</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="queryTable">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Query</th>
+                <th>Expected</th>
+                <th>Top-1 Source</th>
+                <th>Top-1 Topic</th>
+                <th>Score</th>
+                <th>Top-3</th>
+                <th>Filtered Top-1</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="grid two">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Dataset Inventory</h2>
+            <p>Nhóm tài liệu đã tải về dùng cho benchmark.</p>
+          </div>
+          <div class="dataset-list" id="datasetList"></div>
+        </article>
+
+        <article class="panel insight">
+          <div class="panel-head">
+            <h2>Key Findings</h2>
+          </div>
+          <ul>
+            <li>Metadata filter theo <code>topic</code> giúp cả hai strategy đạt 12/12.</li>
+            <li><code>RecursiveChunker</code> tạo chunk ngắn và ổn định hơn cho markdown/manual docs.</li>
+            <li><code>SentenceChunker</code> dễ đọc nhưng chunk trung bình dài hơn nhiều.</li>
+            <li>Unfiltered search bị nhiễu vì benchmark dùng <code>_mock_embed</code>.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
