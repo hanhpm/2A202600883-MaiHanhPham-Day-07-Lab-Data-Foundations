@@ -1,15 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 from src import (
     Document,
     EmbeddingStore,
+    EMBEDDING_PROVIDER_ENV,
     FixedSizeChunker,
     KnowledgeBaseAgent,
+    OPENAI_EMBEDDING_MODEL,
+    OpenAIEmbedder,
     RecursiveChunker,
     SentenceChunker,
     _mock_embed,
@@ -105,6 +111,37 @@ BASELINE_CHUNKERS = {
 }
 
 
+class CachedEmbedder:
+    """Cache embedding calls during benchmark runs to avoid duplicate API requests."""
+
+    def __init__(self, embedder: Any, max_input_chars: int | None = None) -> None:
+        self.embedder = embedder
+        self._backend_name = getattr(embedder, "_backend_name", embedder.__class__.__name__)
+        self.max_input_chars = max_input_chars
+        self._cache: dict[str, list[float]] = {}
+
+    def __call__(self, text: str) -> list[float]:
+        if text not in self._cache:
+            embedding_text = text[: self.max_input_chars] if self.max_input_chars else text
+            self._cache[text] = self.embedder(embedding_text)
+        return self._cache[text]
+
+
+def get_benchmark_embedder() -> tuple[Any, str]:
+    load_dotenv(ROOT / ".env", override=False)
+    provider = os.getenv(EMBEDDING_PROVIDER_ENV, "mock").strip().lower()
+    if provider == "openai":
+        try:
+            model = os.getenv("OPENAI_EMBEDDING_MODEL", OPENAI_EMBEDDING_MODEL)
+            return (
+                CachedEmbedder(OpenAIEmbedder(model_name=model), max_input_chars=6000),
+                f"openai:{model}:truncated_to_6000_chars",
+            )
+        except Exception as exc:
+            print(f"[WARN] OpenAI embedder unavailable, falling back to mock: {exc}", file=sys.stderr)
+    return CachedEmbedder(_mock_embed), "mock"
+
+
 def load_texts() -> list[dict[str, str]]:
     rows = []
     for filename, topic, doc_type, title in DATASET:
@@ -172,11 +209,11 @@ def make_grounded_answer(prompt: str) -> str:
     return f"Grounded answer for: {question}. Evidence preview: {context_preview}"
 
 
-def run_strategy(rows: list[dict[str, str]], strategy: dict[str, Any]) -> dict[str, Any]:
+def run_strategy(rows: list[dict[str, str]], strategy: dict[str, Any], embedding_fn: Any) -> dict[str, Any]:
     documents = build_documents(rows, strategy["chunker"])
     store = EmbeddingStore(
         collection_name=f"phase2_{strategy['student_id']}",
-        embedding_fn=_mock_embed,
+        embedding_fn=embedding_fn,
     )
     store.add_documents(documents)
     query_results = []
@@ -189,7 +226,7 @@ def run_strategy(rows: list[dict[str, str]], strategy: dict[str, Any]) -> dict[s
         )
         filtered_store = EmbeddingStore(
             collection_name=f"phase2_filtered_{strategy['student_id']}_{query['id']}",
-            embedding_fn=_mock_embed,
+            embedding_fn=embedding_fn,
         )
         filtered_store.add_documents(
             [
@@ -269,9 +306,16 @@ def build_baseline(rows: list[dict[str, str]]) -> dict[str, dict[str, float]]:
     return baseline
 
 
-def markdown_report(rows: list[dict[str, str]], baseline: dict[str, Any], strategies: list[dict[str, Any]]) -> str:
+def markdown_report(
+    rows: list[dict[str, str]],
+    baseline: dict[str, Any],
+    strategies: list[dict[str, Any]],
+    embedding_backend: str,
+) -> str:
     lines = [
         "# Phase 2 Benchmark Results",
+        "",
+        f"**Embedding backend:** `{embedding_backend}`",
         "",
         "## Dataset",
         "",
@@ -385,25 +429,31 @@ def main() -> None:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
 
+    embedder, embedding_backend = get_benchmark_embedder()
     rows = load_texts()
     baseline = build_baseline(rows)
-    strategy_results = [run_strategy(rows, strategy) for strategy in STRATEGIES]
+    strategy_results = [run_strategy(rows, strategy, embedder) for strategy in STRATEGIES]
     output = {
+        "embedding_backend": embedding_backend,
         "dataset": rows,
         "baseline": baseline,
         "strategies": strategy_results,
     }
 
     REPORT_DIR.mkdir(exist_ok=True)
-    (REPORT_DIR / "phase2_benchmark_results.json").write_text(
+    suffix = "_openai" if embedding_backend.startswith("openai:") else ""
+    json_path = REPORT_DIR / f"phase2_benchmark_results{suffix}.json"
+    md_path = REPORT_DIR / f"PHASE2_BENCHMARK_RESULTS{suffix.upper()}.md"
+
+    json_path.write_text(
         json.dumps(output, ensure_ascii=True, indent=2),
         encoding="utf-8",
     )
-    (REPORT_DIR / "PHASE2_BENCHMARK_RESULTS.md").write_text(
-        markdown_report(rows, baseline, strategy_results),
+    md_path.write_text(
+        markdown_report(rows, baseline, strategy_results, embedding_backend),
         encoding="utf-8",
     )
-    print(markdown_report(rows, baseline, strategy_results))
+    print(markdown_report(rows, baseline, strategy_results, embedding_backend))
 
 
 if __name__ == "__main__":

@@ -256,6 +256,19 @@ report_ui_phase2/index.html
 
 Dashboard hiển thị dataset inventory, score unfiltered/filtered, chunk profile, actual similarity predictions, query result matrix, agent answer verification, rubric coverage và key findings.
 
+### Optional OpenAI Embedding Run
+
+Nhóm chạy thêm benchmark bằng OpenAI `text-embedding-3-small` để so sánh với `_mock_embed`. Vì một số chunk dài vượt giới hạn input của OpenAI embedding, script benchmark truncate phần text dùng để tạo embedding xuống tối đa 6000 ký tự, còn metadata/source vẫn giữ nguyên.
+
+| Backend | Nguyễn Thị Vang - SentenceChunker | Phạm Mai Hạnh - RecursiveChunker | Nhận xét |
+|---|---:|---:|---|
+| `_mock_embed` unfiltered | 3 / 12 | 3 / 12 | Mock không hiểu nghĩa semantic nên dễ retrieve nhầm topic |
+| `_mock_embed` filtered | 12 / 12 | 12 / 12 | Metadata filter giúp sửa lỗi retrieval |
+| OpenAI unfiltered | 12 / 12 | 12 / 12 | Semantic embedding thật retrieve đúng topic ngay cả khi chưa filter |
+| OpenAI filtered | 12 / 12 | 12 / 12 | Filter vẫn hữu ích để giới hạn search space |
+
+File chi tiết: `report/PHASE2_BENCHMARK_RESULTS_OPENAI.md` và `report/OPENAI_EMBEDDING_COMPARISON.md`.
+
 ---
 
 ## 7. What I Learned (5 điểm - Demo)
