@@ -204,15 +204,15 @@ pytest tests/ -v
 
 | Pair | Sentence A | Sentence B | Dự đoán | Actual Score | Đúng? |
 |---|---|---|---|---:|---|
-| 1 | Chroma stores embeddings with metadata. | Vector databases store vectors and metadata. | high | 0.62 | Có |
-| 2 | FastAPI creates interactive API docs. | FastAPI provides Swagger UI documentation. | high | 0.71 | Có |
-| 3 | Docker Compose runs multi-container apps. | A guitar player performs on stage. | low | 0.08 | Có |
-| 4 | Qdrant collections contain points and vectors. | Sentence Transformers computes text embeddings. | medium | 0.31 | Có |
-| 5 | Recursive splitting preserves paragraph context. | Chunking can keep sections coherent. | high | 0.58 | Có |
+| 1 | Chroma stores embeddings with metadata. | Vector databases store vectors and metadata. | high | -0.0965 | Không |
+| 2 | FastAPI creates interactive API docs. | FastAPI provides Swagger UI documentation. | high | -0.0259 | Không |
+| 3 | Docker Compose runs multi-container apps. | A guitar player performs on stage. | low | 0.1510 | Không |
+| 4 | Qdrant collections contain points and vectors. | Sentence Transformers computes text embeddings. | medium | -0.0853 | Không |
+| 5 | Recursive splitting preserves paragraph context. | Chunking can keep sections coherent. | high | -0.1959 | Không |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn nghĩa?**
 
-Pair 4 có điểm medium vì cả hai câu đều thuộc technical AI/search domain dù nói về hai công cụ khác nhau. Điều này cho thấy embeddings không chỉ bắt từ khóa chính xác, mà còn phản ánh ngữ cảnh rộng của câu.
+Kết quả bất ngờ nhất là các cặp dự đoán high lại có điểm âm hoặc rất thấp. Nguyên nhân là lab đang dùng `_mock_embed`, đây là embedding fallback deterministic để phục vụ test chứ không phải semantic embedding thật. Điều này cho thấy khi đánh giá ý nghĩa văn bản, backend embedding ảnh hưởng rất lớn; nếu dùng `LocalEmbedder(all-MiniLM-L6-v2)` thì các dự đoán semantic có thể hợp lý hơn.
 
 ---
 
@@ -233,14 +233,16 @@ Chạy benchmark queries trên implementation cá nhân với data trong `data/d
 
 ### Kết Quả Của Tôi
 
+Agent answer được tạo bằng `KnowledgeBaseAgent.answer()` với một mock grounded LLM. Mock LLM không tự bịa câu trả lời mới; nó nhận prompt có retrieved context, trích evidence preview và dùng filtered top-3 context để verify với gold answer.
+
 | # | Query | Top-1 Retrieved Chunk (tóm tắt) | Score | Relevant? | Agent Answer (tóm tắt) |
 |---|---|---|---:|---|---|
-| 1 | Chroma retrieval | Unfiltered top-1 là Qdrant; filtered top-1 là Chroma introduction | 0 | Có khi filter | Chroma hỗ trợ embeddings, metadata và retrieval |
-| 2 | FastAPI local docs | Unfiltered top-1 là Qdrant; filtered top-1 là FastAPI first steps | 0 | Có khi filter | Chạy `fastapi dev`, mở `/docs` |
-| 3 | Recursive splitter | Unfiltered top-1 là Qdrant; filtered top-1 là LangChain text splitters | 0 | Có khi filter | Recursive splitter giữ paragraph trước rồi tách nhỏ |
-| 4 | Qdrant collection | Top-3 có Qdrant; filtered top-1 là Qdrant points | 1 | Có | Collection là set of points/vectors/payload |
-| 5 | Docker Compose quick start | Unfiltered top-1 là Qdrant; filtered top-1 là Docker Compose readme | 0 | Có khi filter | Dockerfile, compose.yaml, `docker compose up` |
-| 6 | Sentence Transformers similarity | Top-1 là Sentence Transformers STS | 2 | Có | Hỗ trợ cosine, dot, Euclidean, Manhattan |
+| 1 | Chroma retrieval | Unfiltered top-1 là Qdrant; filtered top-1 là Chroma introduction | 0 | Có khi filter | Verified: context Chroma có embeddings, metadata, retrieval |
+| 2 | FastAPI local docs | Unfiltered top-1 là Qdrant; filtered top-1 là FastAPI first steps | 0 | Có khi filter | Verified: context FastAPI có `fastapi dev`, `/docs` |
+| 3 | Recursive splitter | Unfiltered top-1 là Qdrant; filtered top-1 là LangChain text splitters | 0 | Có khi filter | Verified: context LangChain nói recursive splitter giữ paragraph rồi tách nhỏ |
+| 4 | Qdrant collection | Top-3 có Qdrant; filtered top-1 là Qdrant points | 1 | Có | Verified: context Qdrant mô tả points/collections/vectors/payload |
+| 5 | Docker Compose quick start | Unfiltered top-1 là Qdrant; filtered top-1 là Docker Compose readme | 0 | Có khi filter | Verified: context Docker Compose có Dockerfile, `compose.yaml`, `docker compose up` |
+| 6 | Sentence Transformers similarity | Top-1 là Sentence Transformers STS | 2 | Có | Verified: context Sentence Transformers có cosine, dot, Euclidean, Manhattan |
 
 **Bao nhiêu queries trả về chunk relevant trong top-3?** 6 / 6 khi dùng metadata filter theo `topic`.
 
@@ -252,7 +254,7 @@ Nhóm có thêm dashboard để hiển thị trực quan metrics so sánh:
 report_ui_phase2/index.html
 ```
 
-Dashboard hiển thị dataset inventory, score unfiltered/filtered, chunk profile, query result matrix và key findings.
+Dashboard hiển thị dataset inventory, score unfiltered/filtered, chunk profile, actual similarity predictions, query result matrix, agent answer verification, rubric coverage và key findings.
 
 ---
 

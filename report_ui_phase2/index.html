@@ -11,10 +11,11 @@
       <div>
         <p class="eyebrow">Day 07 Lab - Embedding & Vector Store</p>
         <h1>Phase 2 Metrics Dashboard</h1>
+        <p class="subhead">Track retrieval quality, metadata filtering, agent grounding, and similarity prediction results from the downloaded dataset.</p>
       </div>
       <div class="identity">
-        <span>Nguyễn Thị Vang · 2A202600723</span>
-        <span>Phạm Mai Hạnh · 2A202600883</span>
+        <span>Nguyen Thi Vang - 2A202600723</span>
+        <span>Pham Mai Hanh - 2A202600883</span>
       </div>
     </header>
 
@@ -33,12 +34,12 @@
         <article class="metric good">
           <span class="label">Filtered Score</span>
           <strong>12/12</strong>
-          <span class="hint">cả hai strategy</span>
+          <span class="hint">both strategies</span>
         </article>
         <article class="metric warn">
           <span class="label">Unfiltered Score</span>
           <strong>3/12</strong>
-          <span class="hint">do mock embedder nhiễu</span>
+          <span class="hint">mock embedder noise</span>
         </article>
       </section>
 
@@ -46,7 +47,7 @@
         <article class="panel">
           <div class="panel-head">
             <h2>Score Comparison</h2>
-            <p>So sánh điểm retrieval trước và sau metadata filter.</p>
+            <p>Retrieval score before and after applying metadata filter by topic.</p>
           </div>
           <div class="score-bars" id="scoreBars"></div>
         </article>
@@ -54,9 +55,31 @@
         <article class="panel">
           <div class="panel-head">
             <h2>Chunk Profile</h2>
-            <p>Số chunk và độ dài trung bình của mỗi strategy.</p>
+            <p>Chunk count and average chunk length for each individual strategy.</p>
           </div>
           <div class="chunk-chart" id="chunkChart"></div>
+        </article>
+      </section>
+
+      <section class="grid two">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Similarity Predictions</h2>
+            <p>Actual scores computed by <code>_mock_embed + compute_similarity</code>.</p>
+          </div>
+          <div class="similarity-list" id="similarityList"></div>
+        </article>
+
+        <article class="panel insight">
+          <div class="panel-head">
+            <h2>Key Findings</h2>
+          </div>
+          <ul>
+            <li>Metadata filter by <code>topic</code> raises both strategies to 12/12.</li>
+            <li><code>RecursiveChunker</code> creates shorter, more stable chunks for markdown/manual docs.</li>
+            <li><code>SentenceChunker</code> is readable but produces much longer average chunks.</li>
+            <li>Similarity predictions diverge because the benchmark uses <code>_mock_embed</code>, not a real semantic embedder.</li>
+          </ul>
         </article>
       </section>
 
@@ -64,7 +87,7 @@
         <div class="panel-head split">
           <div>
             <h2>Query Result Matrix</h2>
-            <p>Top-1 source, điểm từng query và trạng thái top-3 relevant.</p>
+            <p>Top-1 source, query score, top-3 relevance, and filtered top-1 source.</p>
           </div>
           <div class="legend">
             <span><i class="dot good-dot"></i>Relevant</span>
@@ -90,24 +113,32 @@
         </div>
       </section>
 
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Agent Answer Verification</h2>
+          <p>Agent answers are generated with <code>KnowledgeBaseAgent.answer()</code> using filtered top-3 context.</p>
+        </div>
+        <div class="agent-grid" id="agentGrid"></div>
+      </section>
+
       <section class="grid two">
         <article class="panel">
           <div class="panel-head">
             <h2>Dataset Inventory</h2>
-            <p>Nhóm tài liệu đã tải về dùng cho benchmark.</p>
+            <p>Downloaded documents used for Phase 2 retrieval benchmark.</p>
           </div>
           <div class="dataset-list" id="datasetList"></div>
         </article>
 
         <article class="panel insight">
           <div class="panel-head">
-            <h2>Key Findings</h2>
+            <h2>Rubric Coverage</h2>
           </div>
           <ul>
-            <li>Metadata filter theo <code>topic</code> giúp cả hai strategy đạt 12/12.</li>
-            <li><code>RecursiveChunker</code> tạo chunk ngắn và ổn định hơn cho markdown/manual docs.</li>
-            <li><code>SentenceChunker</code> dễ đọc nhưng chunk trung bình dài hơn nhiều.</li>
-            <li>Unfiltered search bị nhiễu vì benchmark dùng <code>_mock_embed</code>.</li>
+            <li>Core implementation: <strong>42/42 tests passed</strong>.</li>
+            <li>Document set: <strong>9 documents</strong>, matching the 5-10 docs requirement.</li>
+            <li>Metadata utility: clear comparison of unfiltered vs filtered retrieval.</li>
+            <li>Grounding quality: agent answer includes evidence preview from context.</li>
           </ul>
         </article>
       </section>

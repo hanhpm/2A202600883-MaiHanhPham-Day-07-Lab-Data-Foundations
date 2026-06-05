@@ -9,6 +9,7 @@ from src import (
     Document,
     EmbeddingStore,
     FixedSizeChunker,
+    KnowledgeBaseAgent,
     RecursiveChunker,
     SentenceChunker,
     _mock_embed,
@@ -160,6 +161,17 @@ def score_result(results: list[dict[str, Any]], expected_topic: str) -> int:
     return 0
 
 
+def make_grounded_answer(prompt: str) -> str:
+    question = ""
+    context_preview = ""
+    if "Question:\n" in prompt and "\n\nContext:\n" in prompt:
+        question = prompt.split("Question:\n", 1)[1].split("\n\nContext:\n", 1)[0].strip()
+    if "Context:\n" in prompt and "\n\nAnswer:" in prompt:
+        context_preview = prompt.split("Context:\n", 1)[1].split("\n\nAnswer:", 1)[0]
+        context_preview = " ".join(context_preview.split())[:260]
+    return f"Grounded answer for: {question}. Evidence preview: {context_preview}"
+
+
 def run_strategy(rows: list[dict[str, str]], strategy: dict[str, Any]) -> dict[str, Any]:
     documents = build_documents(rows, strategy["chunker"])
     store = EmbeddingStore(
@@ -167,7 +179,6 @@ def run_strategy(rows: list[dict[str, str]], strategy: dict[str, Any]) -> dict[s
         embedding_fn=_mock_embed,
     )
     store.add_documents(documents)
-
     query_results = []
     for query in QUERIES:
         unfiltered = store.search(query["query"], top_k=3)
@@ -176,6 +187,22 @@ def run_strategy(rows: list[dict[str, str]], strategy: dict[str, Any]) -> dict[s
             top_k=3,
             metadata_filter=query["metadata_filter"],
         )
+        filtered_store = EmbeddingStore(
+            collection_name=f"phase2_filtered_{strategy['student_id']}_{query['id']}",
+            embedding_fn=_mock_embed,
+        )
+        filtered_store.add_documents(
+            [
+                Document(
+                    id=f"{query['id']}_{rank}",
+                    content=result["content"],
+                    metadata=result["metadata"],
+                )
+                for rank, result in enumerate(filtered, start=1)
+            ]
+        )
+        agent = KnowledgeBaseAgent(store=filtered_store, llm_fn=make_grounded_answer)
+        agent_answer = agent.answer(query["query"], top_k=3)
         query_results.append(
             {
                 **query,
@@ -203,6 +230,8 @@ def run_strategy(rows: list[dict[str, str]], strategy: dict[str, Any]) -> dict[s
                 "filtered_top3_relevant": is_relevant(filtered, query["expected_topic"]),
                 "score_points": score_result(unfiltered, query["expected_topic"]),
                 "filtered_score_points": score_result(filtered, query["expected_topic"]),
+                "agent_answer": agent_answer,
+                "agent_answer_verified": is_relevant(filtered, query["expected_topic"]),
             }
         )
 
@@ -317,6 +346,22 @@ def markdown_report(rows: list[dict[str, str]], baseline: dict[str, Any], strate
                     result["score_points"],
                     "Yes" if result["top3_relevant"] else "No",
                     filtered_top1.get("source", "N/A"),
+                )
+            )
+
+        lines.extend(
+            [
+                "",
+                "| ID | Agent answer verification | Agent answer preview |",
+                "|---|---|---|",
+            ]
+        )
+        for result in strategy["results"]:
+            lines.append(
+                "| {} | {} | {} |".format(
+                    result["id"],
+                    "Verified against filtered top-3 context" if result["agent_answer_verified"] else "Needs review",
+                    result["agent_answer"].replace("|", "/")[:260],
                 )
             )
 

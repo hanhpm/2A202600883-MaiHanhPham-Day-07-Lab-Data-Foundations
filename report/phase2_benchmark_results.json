@@ -173,7 +173,9 @@
           "top3_relevant": true,
           "filtered_top3_relevant": true,
           "score_points": 1,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: What does Chroma provide for retrieval and metadata filtering?. Evidence preview: [Context 1 | source=data/downloaded_data/chroma_usage_guide.md | score=0.2740] `embeddings` are excluded by default for performance and the `ids` are always returned. You can specify which of these you want returned by passing an array of included field names ",
+          "agent_answer_verified": true
         },
         {
           "id": "Q2",
@@ -232,7 +234,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: How do you run a FastAPI app locally and where can you open interactive API docs?. Evidence preview: [Context 1 | source=data/downloaded_data/fastapi_first_steps.md | score=0.2143] And there are dozens of alternatives, all based on OpenAPI. You could easily add any of those alternatives to your application built with **FastAPI**. You could also use it to gene",
+          "agent_answer_verified": true
         },
         {
           "id": "Q3",
@@ -291,7 +295,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: Why is RecursiveCharacterTextSplitter a good default text splitting strategy?. Evidence preview: [Context 1 | source=data/downloaded_data/langchain_text_splitters.md | score=0.1012] Copy page pip uv pip install -U langchain-text-splitters **Text splitters** break large docs into smaller chunks that will be retrievable individually and fit within model con",
+          "agent_answer_verified": true
         },
         {
           "id": "Q4",
@@ -350,7 +356,9 @@
           "top3_relevant": true,
           "filtered_top3_relevant": true,
           "score_points": 2,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: In Qdrant, what is a collection and which distance metrics are supported?. Evidence preview: [Context 1 | source=data/downloaded_data/qdrant_collections.md | score=0.2503] And additionally, sparse vectors and dense vectors must have different names within a collection. PUT /collections/{collection_name} { \"sparse_vectors\": { \"text\": { } } } curl -X PU",
+          "agent_answer_verified": true
         },
         {
           "id": "Q5",
@@ -409,7 +417,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: What is the quick start process for Docker Compose?. Evidence preview: [Context 1 | source=data/downloaded_data/docker_compose_readme.md | score=0.0915] # Table of Contents - [Docker Compose](#docker-compose) - [Where to get Docker Compose](#where-to-get-docker-compose) + [Windows and macOS](#windows-and-macos) + [Linux](#linux) ",
+          "agent_answer_verified": true
         },
         {
           "id": "Q6",
@@ -468,7 +478,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: Which similarity functions are available in Sentence Transformers for semantic textual similarity?. Evidence preview: [Context 1 | source=data/downloaded_data/sentence_transformers_sts.md | score=0.0345] Built with [Sphinx](https://www.sphinx-doc.org/) using a [theme](https://github.com/readthedocs/sphinx_rtd_theme) provided by [Read the Docs](https://readthedocs.org). [Conte",
+          "agent_answer_verified": true
         }
       ],
       "total_score": 3,
@@ -539,7 +551,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: What does Chroma provide for retrieval and metadata filtering?. Evidence preview: [Context 1 | source=data/downloaded_data/chroma_introduction.md | score=0.2060] ### Collections * [Manage Collections](/docs/collections/manage-collections) * [Add Data](/docs/collections/add-data) * [Update Data](/docs/collections/update-data) * [Delete Data]",
+          "agent_answer_verified": true
         },
         {
           "id": "Q2",
@@ -598,7 +612,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: How do you run a FastAPI app locally and where can you open interactive API docs?. Evidence preview: [Context 1 | source=data/downloaded_data/fastapi_first_steps.md | score=0.2628] Deploy your app to **[FastAPI Cloud](https://fastapicloud.com)** with one command: `fastapi deploy`. \ud83c\udf89 #### About FastAPI Cloud { #about-fastapi-cloud } **[FastAPI Cloud](https://f",
+          "agent_answer_verified": true
         },
         {
           "id": "Q3",
@@ -657,7 +673,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: Why is RecursiveCharacterTextSplitter a good default text splitting strategy?. Evidence preview: [Context 1 | source=data/downloaded_data/langchain_text_splitters.md | score=0.2887] * [OpenAI](/oss/python/integrations/providers/openai) * [Anthropic](/oss/python/integrations/providers/anthropic) * [Google](/oss/python/integrations/providers/google) * [AWS]",
+          "agent_answer_verified": true
         },
         {
           "id": "Q4",
@@ -716,7 +734,9 @@
           "top3_relevant": true,
           "filtered_top3_relevant": true,
           "score_points": 1,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: In Qdrant, what is a collection and which distance metrics are supported?. Evidence preview: [Context 1 | source=data/downloaded_data/qdrant_points.md | score=0.3127] This example removes all points with `{ \"color\": \"red\" }` from the collection. ## Conditional updates _Available as of v1.16.0_ [Context 2 | source=data/downloaded_data/qdrant_points.md ",
+          "agent_answer_verified": true
         },
         {
           "id": "Q5",
@@ -775,7 +795,9 @@
           "top3_relevant": false,
           "filtered_top3_relevant": true,
           "score_points": 0,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: What is the quick start process for Docker Compose?. Evidence preview: [Context 1 | source=data/downloaded_data/docker_compose_readme.md | score=0.1751] > **Note**: About Docker Swarm > Docker Swarm used to rely on the legacy compose file format but did not adopt the compose specification > so is missing some of the recent enhanc",
+          "agent_answer_verified": true
         },
         {
           "id": "Q6",
@@ -834,7 +856,9 @@
           "top3_relevant": true,
           "filtered_top3_relevant": true,
           "score_points": 2,
-          "filtered_score_points": 2
+          "filtered_score_points": 2,
+          "agent_answer": "Grounded answer for: Which similarity functions are available in Sentence Transformers for semantic textual similarity?. Evidence preview: [Context 1 | source=data/downloaded_data/sentence_transformers_sts.md | score=0.3005] * [Pretrained Models](../../sparse_encoder/pretrained_models.html) * [Core SPLADE Models](../../sparse_encoder/pretrained_models.html#core-splade-models) * [Inference-Free SP",
+          "agent_answer_verified": true
         }
       ],
       "total_score": 3,
